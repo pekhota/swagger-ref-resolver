@@ -25,11 +25,11 @@ class App {
 
     /**
      * Function to process array items in swagger specification
-     * @param object
+     * @param arr
      * @returns {Array}
      */
-    processArray(object) {
-        return object.reduce((acc, currentValue) => acc.concat(this.traverse(currentValue)), []);
+    processArray(arr) {
+        return arr.map((row) => this.traverse(row));
     }
 
     /**
@@ -48,8 +48,17 @@ class App {
      * @param item
      * @returns {boolean}
      */
+    isObjectAndNotArray(item) {
+        return (this.isObject(item) && !Array.isArray(item));
+    };
+
+    /**
+     *
+     * @param item
+     * @returns {*|boolean}
+     */
     isObject(item) {
-        return (item && typeof item === 'object' && !Array.isArray(item));
+        return (item && typeof item === 'object')
     };
 
     /**
@@ -61,10 +70,10 @@ class App {
         if (!sources.length) return target;
         const source = sources.shift();
 
-        if (this.isObject(target) && this.isObject(source)) {
+        if (this.isObjectAndNotArray(target) && this.isObjectAndNotArray(source)) {
             for (const key in source) {
                 // noinspection JSUnfilteredForInLoop
-                if (this.isObject(source[key])) {
+                if (this.isObjectAndNotArray(source[key])) {
                     if (!target[key]) Object.assign(target, {[key]: {}});
                     this.mergeDeep(target[key], source[key]);
                 } else {
@@ -84,31 +93,23 @@ class App {
      * @returns {*}
      */
     traverse(object) {
-
-        if(typeof object !== 'object') return object;
+        if(!this.isObject(object)) return object;
 
         if (Array.isArray(object)) return this.processArray(object);
 
+        if (object['$ref']) return this.processRef(object);
 
-        if (typeof object['$ref'] !== "undefined") return this.processRef(object);
+        if (object['allOf']) return object['allOf'].reduce((acc, cur) => this.mergeDeep(acc, this.traverse(cur)), {});
 
-
-        if (typeof object['allOf'] !== "undefined") return object['allOf'].reduce((acc, cur) => this.mergeDeep(acc, this.traverse(cur)), {});
-
-
-        return Object.entries(object).reduce((acc, cur) => {
-            const item = cur[1];
-            const key = cur[0];
-
-            if (typeof item === 'object') {
+        return Object.entries(object).reduce((acc, [key, item]) => {
+            if (this.isObject(item)) {
                 return Object.assign(acc, {[key]: Array.isArray(item) ? this.processArray(item) : this.traverse(item)});
-            } else {
-                return Object.assign(acc, {[key]: item});
             }
+
+            return Object.assign(acc, {[key]: item});
         }, {});
     };
 }
-
 
 const app = new App(data);
 
