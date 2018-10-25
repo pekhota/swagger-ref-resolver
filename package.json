@@ -1,0 +1,19 @@
+{
+  "name": "swagger-ref-resolver",
+  "version": "1.0.0",
+  "description": "## Problem",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pekhota/swagger-ref-resolver.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pekhota/swagger-ref-resolver/issues"
+  },
+  "homepage": "https://github.com/pekhota/swagger-ref-resolver#readme"
+}
